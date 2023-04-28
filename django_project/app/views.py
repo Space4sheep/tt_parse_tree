@@ -1,3 +1,12 @@
-from django.shortcuts import render
+from django.http import JsonResponse
 
-# Create your views here.
+from syntax_tree.np_paraphrase_generator import NLTKProcessor
+
+
+def paraphrase(request):
+
+    tree_str = request.GET.get('tree', '')
+
+    result = NLTKProcessor(tree_str).build_paraphrases()
+
+    return JsonResponse(result)
