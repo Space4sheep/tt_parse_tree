@@ -62,7 +62,7 @@ class NLTKProcessor(SyntaxTreeProcessor):
         return result
 
     @staticmethod
-    def create_subtrees(subtree: NLTKStorage, limit) -> Iterator[NLTKStorage]:
+    def create_subtrees(subtree: ParentedTree, limit: int) -> Iterator[Tree]:
         """
         Generate subtrees using the NP permutation method with a comma or CC between them.
         """

@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 
 from typing import Iterator, List, Dict, Any
 
-from nltk import ParentedTree, Tree
-
 
 class SyntaxTreeStorage(ABC):
     """
@@ -43,4 +41,7 @@ class SyntaxTreeProcessor(ABC):
 
     @abstractmethod
     def build_paraphrases(self, limit) -> Dict:
+        """
+        Method that returns the response of paraphrased trees
+        """
         pass
