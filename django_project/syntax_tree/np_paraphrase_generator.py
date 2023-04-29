@@ -8,7 +8,7 @@ from syntax_tree.core import SyntaxTreeProcessor, SyntaxTreeStorage
 
 class NLTKStorage(SyntaxTreeStorage):
     """
-    Syntax tree class that uses the functionality of the nltk library.
+    A holder for storing functions and methods for working with syntax trees from the NLTK library.
     """
     def __init__(self, tree: str):
         self.tree = Tree.fromstring(tree)
@@ -16,7 +16,7 @@ class NLTKStorage(SyntaxTreeStorage):
 
     @classmethod
     def from_string(cls, tree: str) -> 'NLTKStorage':
-        return cls(tree=tree)
+        return cls(tree)
 
     def p_convert(self, tree):
         return self.ptree.convert(tree)
@@ -29,6 +29,9 @@ class NLTKStorage(SyntaxTreeStorage):
 
 
 class NLTKProcessor(SyntaxTreeProcessor):
+    """
+    A class for processing and paraphrasing syntax trees
+    """
     storage_class = NLTKStorage
 
     def find_np(self) -> List[Dict[str:ParentedTree, str:tuple]]:
@@ -59,7 +62,7 @@ class NLTKProcessor(SyntaxTreeProcessor):
         return result
 
     @staticmethod
-    def create_subtrees(subtree: NLTKStorage) -> Iterator[NLTKStorage]:
+    def create_subtrees(subtree: NLTKStorage, limit) -> Iterator[NLTKStorage]:
         """
         Generate subtrees using the NP permutation method with a comma or CC between them.
         """
@@ -72,16 +75,22 @@ class NLTKProcessor(SyntaxTreeProcessor):
         # Find all the commas and conjunctions, keep them to preserve the sentence structure
         commas_and_ccs = [node for node in subtree if node.label() == ',' or node.label() == 'CC']
 
+        # Counter for the paraphrase limit
+        count = 0
+
         # Create new subtrees, as Tree object
         for combo in all_np_combo:
+            if count == limit:
+                break
             new_subtree = []
             for i in range(len(combo)):
                 new_subtree.append(combo[i])
                 if i < len(commas_and_ccs):
                     new_subtree.append(commas_and_ccs[i])
             yield Tree('NP', new_subtree)
+            count += 1
 
-    def create_trees(self) -> Iterator[Tree]:
+    def create_trees(self, limit) -> Iterator[Tree]:
         """
         Generate new trees for each new subtree.
         """
@@ -89,14 +98,17 @@ class NLTKProcessor(SyntaxTreeProcessor):
         nps = self.find_np()
 
         for np in nps:
-            for subtree in list(self.create_subtrees(np['subtree'])):
+            for subtree in list(self.create_subtrees(np['subtree'], limit)):
                 new_subtree = self.tree_storage.p_convert(subtree)
                 new_tree = self.tree_storage.ptree.copy(deep=True)
                 new_tree[np['position']] = new_subtree
                 yield new_tree
 
-    def build_paraphrases(self):
-        trees = list(self.create_trees())
+    def build_paraphrases(self, limit):
+        """
+        The method collects Tree objects into a dictionary to send a response
+        """
+        trees = list(self.create_trees(limit))
 
         for i, tree in enumerate(trees):
             trees[i] = {"tree": str(tree).replace('\n', '')}

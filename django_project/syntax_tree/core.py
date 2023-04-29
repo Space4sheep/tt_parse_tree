@@ -6,23 +6,29 @@ from nltk import ParentedTree, Tree
 
 
 class SyntaxTreeStorage(ABC):
+    """
+    Method for storing functionality for working with syntax trees
+    """
     @classmethod
     @abstractmethod
     def from_string(cls, tree: str) -> 'SyntaxTreeStorage':
         """
-        Abstract method for creating a tree from a string.
+        Method for creating a tree from a string.
         """
         pass
 
 
 class SyntaxTreeProcessor(ABC):
+    """
+    A class responsible for processing and modifying syntax trees.
+    """
     storage_class = SyntaxTreeStorage
 
     def __init__(self, tree: str):
         self.tree_storage = self.storage_class.from_string(tree)
 
     @abstractmethod
-    def create_trees(self) -> Iterator[Any]:
+    def create_trees(self, limit) -> Iterator[Any]:
         """
         Method for creating trees using different methods for paraphrasing.
         """
@@ -36,5 +42,5 @@ class SyntaxTreeProcessor(ABC):
         pass
 
     @abstractmethod
-    def build_paraphrases(self) -> Dict:
+    def build_paraphrases(self, limit) -> Dict:
         pass
